@@ -1,0 +1,876 @@
+<meta charset="utf-8">
+<title>Universe 2 War Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one calm column, a sticky tab bar, cards only where a thing is its own object. Red team accent, rival colors only on names. */
+:root{
+  --bg:#f6f5f4; --surface:#ffffff; --soft:#efedeb; --line:#e3dfdc;
+  --fg:#1d1a19; --muted:#6b6461;
+  --accent:#b3261e; --accent-soft:#fbe9e7;
+  --good:#1f7a4d; --good-soft:#e5f3eb;
+  --warn:#9a6200; --warn-soft:#fdf1dc;
+  --bad:#b3261e; --bad-soft:#fbe9e7;
+  --t-red:#c0392b; --t-blue:#2563a8; --t-yellow:#a87d00; --t-green:#1e8449; --t-purple:#7d3c98;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151312; --surface:#1f1c1b; --soft:#292524; --line:#36302e;
+  --fg:#f2eeec; --muted:#aaa19d;
+  --accent:#ff6b5e; --accent-soft:#3a1d1a;
+  --good:#5cc98e; --good-soft:#16301f; --warn:#e8b04a; --warn-soft:#33270f; --bad:#ff6b5e; --bad-soft:#3a1d1a;
+  --t-red:#ff6b5e; --t-blue:#6aa6ec; --t-yellow:#e4b832; --t-green:#4cc483; --t-purple:#c08ae0;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151312; --surface:#1f1c1b; --soft:#292524; --line:#36302e;
+  --fg:#f2eeec; --muted:#aaa19d;
+  --accent:#ff6b5e; --accent-soft:#3a1d1a;
+  --good:#5cc98e; --good-soft:#16301f; --warn:#e8b04a; --warn-soft:#33270f; --bad:#ff6b5e; --bad-soft:#3a1d1a;
+  --t-red:#ff6b5e; --t-blue:#6aa6ec; --t-yellow:#e4b832; --t-green:#4cc483; --t-purple:#c08ae0;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;margin:0}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:.2px;text-wrap:balance;margin:0}
+h2{font-size:28px;line-height:1.1}
+h3{font-size:21px;line-height:1.15}
+p{margin:0}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+
+/* Header */
+.top{background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{padding-block:22px 16px;display:grid;gap:6px}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent)}
+.top h1{font-size:40px;line-height:1}
+.top .sub{color:var(--muted);font-size:15px}
+.navbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.04)}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-block:0}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{display:inline-block;text-decoration:none;font:600 15px var(--body);color:var(--muted);padding:12px 14px 9px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--fg)}
+.tab[aria-current="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+section.panel{display:grid;gap:22px;padding-block:34px 40px;border-bottom:2px solid var(--line);scroll-margin-top:56px}
+section.panel:last-of-type{border-bottom:0}
+h2.sec{font-size:34px;line-height:1.05}
+section.panel > div > h2, section.panel > h2{font-size:34px}
+.lead{font-size:18px;max-width:62ch}
+.stack{display:grid;gap:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:12px;min-width:0}
+.label{font-size:12px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted)}
+
+/* Verdict banner */
+.verdict{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:var(--r);padding:18px 20px;display:grid;gap:6px}
+.verdict .big{font-family:var(--display);font-size:30px;font-weight:700;line-height:1.05}
+
+/* Stat tiles */
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:4px}
+.tile .v{font-family:var(--display);font-size:34px;font-weight:700;line-height:1}
+.tile .note{font-size:14px;color:var(--muted)}
+
+/* Pills */
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.plain{background:var(--soft);color:var(--muted)}
+
+/* Ranking bars */
+.rank{display:grid;gap:8px}
+.rrow{display:grid;grid-template-columns:72px 1fr 78px;align-items:center;gap:10px;font-size:15px}
+.rrow .name{font-weight:700}
+.rrow .bar{height:12px;background:var(--soft);border-radius:6px;overflow:hidden}
+.rrow .bar i{display:block;height:100%;border-radius:6px}
+.rrow .val{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.rrow.us{background:var(--accent-soft);border-radius:8px;padding:4px 6px;margin:-4px -6px}
+
+/* Lists */
+ul.clean{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+ul.clean li{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start}
+ul.clean li b.ic{font-family:var(--display);font-size:18px;line-height:1.3;color:var(--accent)}
+ul.clean li.ok b.ic{color:var(--good)}
+ul.clean li.no b.ic{color:var(--bad)}
+
+/* Rival cards */
+.rival{border-top:5px solid var(--c)}
+.rival header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.rival h3{color:var(--c)}
+.tag{font-size:14px;font-style:italic;color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:15px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.predict{background:var(--soft);border-radius:10px;padding:12px 14px;display:grid;gap:6px}
+.counter{border-left:3px solid var(--accent);padding-left:12px}
+
+/* Segment switcher */
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:600 15px var(--body);padding:8px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+/* Tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:700;background:var(--soft)}
+tr:last-child td{border-bottom:0}
+tr.us td{background:var(--accent-soft);font-weight:700}
+
+/* Gauge */
+.gauge{display:grid;gap:6px}
+.gauge .track{position:relative;height:14px;border-radius:7px;background:var(--soft);overflow:hidden}
+.gauge .fill{position:absolute;inset:0 auto 0 0;border-radius:7px}
+.gauge .legend{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
+
+/* Planner */
+.plan{display:grid;gap:14px}
+.prow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.field{display:grid;gap:4px}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+.field input{width:100%;font:600 18px var(--body);padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font-variant-numeric:tabular-nums}
+.out{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:15px}
+.out b{font-variant-numeric:tabular-nums}
+@media (max-width:560px){.prow{grid-template-columns:repeat(2,minmax(0,1fr))}.top h1{font-size:32px}}
+
+/* Scout */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 14px var(--body);padding:7px 12px;border-radius:999px;cursor:pointer;text-align:left}
+.chip:hover{border-color:var(--accent)}
+textarea,.ask input{width:100%;font:16px var(--body);padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
+textarea{min-height:90px;resize:vertical}
+.btn{appearance:none;border:0;background:var(--accent);color:#fff;font:700 15px var(--body);padding:10px 18px;border-radius:10px;cursor:pointer}
+.btn.ghost{background:var(--soft);color:var(--fg)}
+.btn:disabled{opacity:.5;cursor:default}
+.answer{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;white-space:pre-wrap;min-height:60px}
+.ask{display:grid;grid-template-columns:1fr auto;gap:8px}
+/* Sliders */
+.sl-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.sl-grid{grid-template-columns:1fr}}
+.sl-row{display:grid;gap:4px;padding-block:10px;border-bottom:1px solid var(--line)}
+.sl-row:last-child{border-bottom:0}
+.sl-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.sl-head b{font-size:16px}
+.sl-head .val{font-family:var(--display);font-size:24px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.sl-track{position:relative;height:26px}
+.sl-track input[type=range]{position:absolute;inset:0;width:100%;margin:0;accent-color:var(--accent);background:transparent;cursor:pointer}
+.mk{position:absolute;top:-2px;width:2px;height:8px;transform:translateX(-1px);pointer-events:none}
+.mk.mkt{background:var(--muted)}
+.mk.rec{background:var(--good);height:8px;top:20px}
+.sl-meta{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted)}
+.sl-meta .m-rec{color:var(--good);font-weight:700}
+.sl-why{font-size:14px;color:var(--muted)}
+.sl-row.changed .val{color:var(--accent)}
+.res{position:sticky;top:12px;display:grid;gap:12px}
+.rtable{width:100%;font-size:15px}
+.rtable td{padding:7px 4px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:right}
+.rtable td:first-child{text-align:left;white-space:normal}
+.rtable tr.hl td{font-weight:700;font-size:16px}
+.delta{font-size:13px;font-weight:700}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.waiting-card{border-style:dashed}
+.foot{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+@media (prefers-reduced-motion:no-preference){.rrow .bar i,.gauge .fill{transition:width .4s ease}}
+</style>
+<div class="top">
+  <div class="wrap">
+    <span class="eyebrow">Universe 2 &#183; Red Team &#183; Tue/Thu 11:00</span>
+    <h1>War Room</h1>
+    <p class="sub">Results through Period 6 &#183; planning Period 7 &#183; MEGA dashboard updated Oct 8, 2026</p>
+  </div>
+</div>
+
+<div class="navbar"><nav class="wrap tabs" aria-label="Sections">
+  <a class="tab" href="#overview">Where we stand</a>
+  <a class="tab" href="#rivals">Rivals</a>
+  <a class="tab" href="#markets">Markets</a>
+  <a class="tab" href="#forecast">P7 forecast</a>
+  <a class="tab" href="#plan">Our P7 plan</a>
+  <a class="tab" href="#sliders">Sliders</a>
+  <a class="tab" href="#planner">Corporate budget</a>
+  <a class="tab" href="#scout">Ask the Scout</a>
+</nav></div>
+
+<main class="wrap">
+
+<!-- ============ OVERVIEW ============ -->
+<section class="panel" id="overview">
+  <h2 class="sec">Where we stand</h2>
+  <div class="verdict">
+    <span class="label">The short version</span>
+    <p class="big">Red is #1 in revenue and #1 in profit. Green is the team to watch.</p>
+    <p>P6 was our first profitable period (+$394), and revenue jumped 18% to $22.3k. Green also turned a profit and has the best quality in the universe. Our three gaps now: 42 Family cars we built but didn't sell, 12 Image buyers we couldn't serve, and an Eco design that still ranks last.</p>
+  </div>
+
+  <div class="grid4">
+    <div class="tile"><span class="label">Profit rank</span><span class="v">#1 of 5</span><span class="note">+$394 in P6. Green is #2 at +$278.</span></div>
+    <div class="tile"><span class="label">Revenue rank</span><span class="v">#1 of 5</span><span class="note">$22.3k. Blue is close behind at $21.6k.</span></div>
+    <div class="tile"><span class="label">Cash</span><span class="v">$21.3k</span><span class="note">#2. Blue has $22.4k, but more debt.</span></div>
+    <div class="tile"><span class="label">Unsold Family cars</span><span class="v" style="color:var(--warn)">42</span><span class="note">Use these up before building more.</span></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card"><h3>Net profit, Period 6</h3><p class="muted" style="font-size:14px">Bars to the right of the line are profits.</p><div class="rank" id="rank-np"></div></div>
+    <div class="card"><h3>Revenue, Period 6</h3><p class="muted" style="font-size:14px">Every team started at $17.7k in P4.</p><div class="rank" id="rank-rev"></div></div>
+  </div>
+
+  <div class="card">
+    <h3>How each team moved: P4 &#8594; P5 &#8594; P6</h3>
+    <div class="tbl"><table id="trend"></table></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>What went right in P6</h3>
+      <ul class="clean">
+        <li class="ok"><b class="ic">&#10003;</b><span>Our first profit (+$394), and #1 in revenue, profit and retained earnings.</span></li>
+        <li class="ok"><b class="ic">&#10003;</b><span>Low Cost: every one of our 57 buyers got a car. No lost orders.</span></li>
+        <li class="ok"><b class="ic">&#10003;</b><span>Eco went from a $380 loss to a $183 profit by cutting wasted ad spending.</span></li>
+        <li class="ok"><b class="ic">&#10003;</b><span>Image revenue up to $10.7k after raising the price to $126.</span></li>
+        <li class="ok"><b class="ic">&#10003;</b><span>We raised HR &amp; Quality to $1,040. That cuts failure rates and boosts morale starting in P7.</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>What to fix for P7</h3>
+      <ul class="clean">
+        <li class="no"><b class="ic">&#10005;</b><span>42 Family cars left unsold. We built about 137 for 95 buyers. Build fewer this period.</span></li>
+        <li class="no"><b class="ic">&#10005;</b><span>Image: 12 buyers turned away, and at $126 we are still cheaper than Blue, Green and Purple ($135).</span></li>
+        <li class="no"><b class="ic">&#10005;</b><span>Eco design is still last (appeal 56). We spent $94 on Eco engineering; Purple spent $602.</span></li>
+        <li class="no"><b class="ic">&#10005;</b><span>Green's failure rates are 1&#8211;6%; ours are 5&#8211;11%. Our HR spending should close this gap in P7. Don't cut it.</span></li>
+        <li class="no"><b class="ic">&#10005;</b><span>We didn't grow any plants in P6. Image capacity actually shrank (101 &#8594; 96). Growth for P8 has to be bought now.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RIVALS ============ -->
+<section class="panel" id="rivals">
+  <div>
+    <h2>Scouting reports</h2>
+    <p class="lead muted">One card per rival: what they did in P6, what we expect in P7, and how we respond. Predictions come from their spending, unsold cars, plant sizes, debt and cash.</p>
+  </div>
+  <div class="grid2" id="rival-cards"></div>
+</section>
+
+<!-- ============ MARKETS ============ -->
+<section class="panel" id="markets">
+  <div>
+    <h2>The four markets</h2>
+    <p class="lead muted">Pick a market to see who sold what in P6, at what price, and who couldn't keep up.</p>
+  </div>
+  <div class="seg" id="seg-pick" role="group" aria-label="Market"></div>
+  <div class="card" id="seg-summary"></div>
+  <div class="tbl"><table id="seg-table"></table></div>
+  <p class="muted" style="font-size:14px">"Turned away" = P6 orders minus cars sold. "Design" = engineering appeal rank (1 = best). "P7 can build" = next period's usable capacity.</p>
+</section>
+
+<!-- ============ FORECAST ============ -->
+<section class="panel" id="forecast">
+  <div>
+    <h2>Period 7 forecast</h2>
+    <p class="lead muted">Expected P7 buyers = P6 orders &#215; the cheat-sheet growth rate. Cars available = every team's usable P7 capacity plus the cars already sitting in inventory.</p>
+  </div>
+  <div class="grid2" id="fc-cards"></div>
+  <div class="card">
+    <h3>What each rival will probably do in P7</h3>
+    <div class="tbl"><table id="fc-moves"></table></div>
+  </div>
+  <div class="card">
+    <h3>How our P6 predictions did</h3>
+    <p class="muted">Checking last period's calls tells us how much to trust this period's.</p>
+    <div class="tbl"><table id="scorecard"></table></div>
+  </div>
+  <div class="card">
+    <h3>Watch for the merger</h3>
+    <p>Region 2 hasn't opened yet. When it does, it starts with Low Cost and Family only, grows faster (Low Cost +20%, Image +15% per period), and its production costs are 75% of Region 1's.</p>
+    <ul class="clean">
+      <li><b class="ic">&#8594;</b><span>Purple has the least room to expand. Its debt is two-thirds of its equity, which puts it at the 6% interest rate.</span></li>
+      <li><b class="ic">&#8594;</b><span>Region 2 Low Cost is the fastest-growing market in the game. Our Low Cost cost advantage carries over.</span></li>
+      <li><b class="ic">&#8594;</b><span>Cutting budgets or selling plants during the merger hurts morale. Keep HR steady.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ OUR PLAN ============ -->
+<section class="panel" id="plan">
+  <h2 class="sec">Our P7 plan</h2>
+  <div class="verdict">
+    <span class="label">Our P7 game plan</span>
+    <p class="big">Price Image like a leader, sell the Family cars we already have, and finally fix Eco's design.</p>
+    <p><b>Warning:</b> MEGA's default P7 decisions are $1,059 over our cash. Our plan fits with about $330 to spare, and it uses realistic demand instead of MEGA's "sell every car" default.</p>
+    <p>Hold Low Cost exactly where it is, since it balanced perfectly in P6. Keep HR steady so the quality gains land. Start growing Image and Low Cost plants now so the capacity is ready for P8 and the merger.</p>
+  </div>
+  <div class="tbl"><table id="plan-table"></table></div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Company-wide moves</h3>
+      <ul class="clean">
+        <li><b class="ic">1</b><span><b>Keep HR &amp; Quality near $1,040.</b> We just raised it, and the payoff (lower failure rate, more usable capacity, better morale) arrives this period. Cutting now would hurt morale.</span></li>
+        <li><b class="ic">2</b><span><b>Move plant money from Family to Low Cost and Image.</b> Family gets $0 (shrinks 151 &#8594; 142, still far more than we sell). Low Cost +10 cars for $319 (the cheapest capacity in the game at $25 a car). Image +5 cars for $1,610. Eco stays the same size. See the Corporate budget tab.</span></li>
+        <li><b class="ic">3</b><span><b>Take the $2,000 loan.</b> Debt goes to about 39% of equity, still at the 2% rate. The cash arrives in P8, when we'll want to grow Image and Low Cost plants for the merger.</span></li>
+        <li><b class="ic">4</b><span><b>No new Family capacity.</b> Family is shrinking 5% a period, and Purple is sitting on 95 unsold cars.</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>If a rival surprises us</h3>
+      <ul class="clean">
+        <li><b class="ic">?</b><span><b>Purple dumps Family below $50:</b> stay at $60. Purple sold only 14 at $53 because its design ranks last. Family buyers aren't chasing the cheapest car.</span></li>
+        <li><b class="ic">?</b><span><b>Green floods Family:</b> they turned away 50 Family buyers, so expect more Green cars. Keep our dealer marketing at about $1,100.</span></li>
+        <li><b class="ic">?</b><span><b>Yellow cuts Low Cost to clear 46 cars:</b> hold at $42. Their design ranks last, and Low Cost buyers punish stock-outs more than price.</span></li>
+        <li><b class="ic">?</b><span><b>Blue goes above $135 in Image:</b> follow toward $135. Image buyers are the least price-sensitive.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDERS ============ -->
+<section class="panel" id="sliders">
+  <div>
+    <h2>Decision sliders for P7</h2>
+    <p class="lead muted">The same engineering and marketing sliders as MEGA. Each one shows our current setting, the market average and our recommendation. Move them, change price or production, and the expected results update.</p>
+  </div>
+  <div class="seg" id="sl-pick" role="group" aria-label="Category"></div>
+  <div id="sl-body"></div>
+</section>
+
+<!-- ============ PLANNER ============ -->
+<section class="panel" id="planner">
+  <div>
+    <h2>Corporate budget, P7</h2>
+    <p class="lead muted">The same sheet as MEGA's Corporate page. Each market's numbers come straight from the Sliders tab, so change a slider there and this updates. Facility investment, HR, loan and dividend are set here.</p>
+  </div>
+  <div class="card" id="corp-verdict"></div>
+  <div class="tbl"><table id="corp-bu"></table></div>
+  <div class="grid2">
+    <div class="card"><h3>Investment in facilities</h3>
+      <p class="muted" style="font-size:14px">Capacity next period = (facility value &#8722; depreciation + investment) &#247; capex per car. Investing exactly the depreciation keeps a plant the same size. New capacity arrives in P8.</p>
+      <div class="tbl"><table id="corp-fac"></table></div></div>
+    <div class="card"><h3>Cash management</h3><div id="corp-cash"></div></div>
+  </div>
+  <div class="btnrow"><button class="btn ghost" id="corp-reset" type="button">Reset facility and cash inputs to recommended</button></div>
+</section>
+
+<!-- ============ SCOUT ============ -->
+<section class="panel" id="scout">
+  <div>
+    <h2>Ask the Scout</h2>
+    <p class="lead muted">An AI analyst that has every Universe 2 number from P4 to P6 plus the game rules. Ask it about any rival or decision. Paste new intel below and it will use that too.</p>
+  </div>
+  <div class="card">
+    <span class="label">Try one (the last three are this week's class questions)</span>
+    <div class="chips" id="scout-chips"></div>
+    <div class="field"><label for="scout-intel">Extra intel (optional)</label>
+      <textarea id="scout-intel" placeholder="Example: Green said they're adding Family capacity and keeping Image at $135."></textarea></div>
+    <form class="ask" id="scout-form">
+      <input id="scout-q" type="text" placeholder="Ask about a rival, a market, or a P7 decision&#8230;" aria-label="Your question">
+      <button class="btn" id="scout-go" type="submit">Ask</button>
+    </form>
+    <div class="answer" id="scout-out" aria-live="polite">Answers appear here. The first question asks your permission to use Claude.</div>
+    <div><button class="btn ghost" id="scout-stop" type="button" hidden>Stop</button></div>
+  </div>
+</section>
+
+<p class="foot">Built from MEGA-Dashboard-Tue-Thu-11-00-AM-P6 (Universe 2), our MEGA Low Cost decision screens, and the MEGA pre-reading and cheat sheets. Forecasts are estimates. Confirm costs in MEGA's own forecast panel before submitting.</p>
+</main>
+
+<script>
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 DATA: Universe 2, Region 1. Arrays are [P4, P5, P6] unless noted \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+const TEAMS=['Red','Blue','Yellow','Green','Purple'];
+const TC={Red:'var(--t-red)',Blue:'var(--t-blue)',Yellow:'var(--t-yellow)',Green:'var(--t-green)',Purple:'var(--t-purple)'};
+const CO={
+ Red:{rev:[17700,18914,22332],np:[-302,-506,394],cash:21295,debt:12000,are:-11912,hr:[150,150,1040],mkt:[3594,4619,3934],eng:[1136,1138,1229],plant:'Maintained',ffr:'5\u201311%'},
+ Blue:{rev:[17700,16794,21554],np:[-302,-627,-1281],cash:22431,debt:13691,are:-13707,hr:[150,500,300],mkt:[3594,3736,3760],eng:[1136,1322,1502],plant:'Shrinking',ffr:'4\u201310%'},
+ Yellow:{rev:[17700,16471,16618],np:[-302,-1055,-312],cash:19204,debt:9600,are:-13167,hr:[150,300,350],mkt:[3594,3495,3879],eng:[1136,1042,1160],plant:'Growing',ffr:'5\u201311%'},
+ Green:{rev:[17700,19276,19617],np:[-302,-2886,278],cash:20855,debt:12000,are:-14407,hr:[150,1500,296],mkt:[3594,4021,3560],eng:[1136,1972,1444],plant:'Growing fast',ffr:'1\u20136%'},
+ Purple:{rev:[17700,16450,11614],np:[-302,-2096,-3697],cash:18999,debt:20232,are:-17592,hr:[150,300,500],mkt:[3594,3814,2855],eng:[1136,1725,1284],plant:'Growing (on debt)',ffr:'5\u201311%'}};
+// Per team: [soldP5, soldP6, ordersP5, ordersP6, priceP5, priceP6, mktP6, appealP6, designRankP6, unsoldP6, usableP7, segEBIT_P6, unitCostP6, engP6]
+const SEG=[
+ {k:'lc',name:'Low Cost',g:.10,el:2.2,p4:[49,40],buyers:'Price and availability matter most. Ads and design matter little.',d:{
+  Red:[51,57,64,57,42,42,490,88,4,0,64,5,28.5,32],Blue:[25,61,25,65,39,39,264,109,3,0,59,-343,37,39],Yellow:[44,26,44,26,40,39,148,51,5,46,77,33,25.6,16],
+  Green:[51,61,67,80,40,39,311,106,1,1,74,260,26.9,36],Purple:[51,63,57,75,41,39,284,119,2,0,74,20,29.4,51]}},
+ {k:'fam',name:'Family',g:-.05,el:1.3,p4:[99,60],buyers:'Medium on everything. Dealer proximity is key. Shrinks 5% a period.',d:{
+  Red:[88,95,88,95,60,60,1118,72,3,42,133,511,32.8,161],Blue:[87,87,87,87,58,60,985,81,2,0,112,-115,41.6,195],Yellow:[94,71,114,71,60,63,1251,57,4,31,112,174,33.1,137],
+  Green:[114,113,120,163,60,59,1213,85,1,1,125,880,34.2,199],Purple:[46,14,46,14,60,53,208,23,5,95,164,-644,40.4,54]}},
+ {k:'eco',name:'Eco-Friendly',g:.15,el:.7,p4:[40,65],buyers:'Engineering matters most. Low price sensitivity. Grows 15% a period.',d:{
+  Red:[51,56,51,56,69,63,394,56,5,19,80,183,39.5,94],Blue:[27,34,27,34,69,65,379,103,4,12,48,-1168,69.5,231],Yellow:[47,43,47,43,65,67,453,133,2,21,60,-174,42.8,267],
+  Green:[32,56,32,56,65,61,552,66,3,27,64,-236,45.1,138],Purple:[74,45,86,81,71,73,842,166,1,1,71,-1222,53.9,602]}},
+ {k:'img',name:'Image',g:.05,el:.35,p4:[60,120],buyers:'Design and brand are everything. Price barely matters.',d:{
+  Red:[67,85,88,97,119,126,1932,191,3,1,88,-65,72.7,942],Blue:[66,87,75,107,135,135,2132,216,2,1,90,618,74.5,1037],Yellow:[47,66,47,66,128,125,2028,157,4,15,68,-152,69.7,740],
+  Green:[66,53,100,111,126,135,1484,212,1,1,80,-386,78.6,1070],Purple:[47,38,47,38,135,135,1521,114,5,24,84,-1264,80.9,577]}}];
+const I={s5:0,s6:1,o5:2,o6:3,p5:4,p6:5,mkt:6,app:7,rank:8,inv:9,use:10,ebit:11,uc:12,eng:13};
+
+// Recommended Red P7 plan: [price, build, marketing, engineering]
+
+const RIVALS=[
+ {t:'Green',nick:'Our main rival for #1',threat:['bad','High threat'],
+  did:['Swung from a $2.9k loss to a $278 profit by cutting HR (1,500 \u2192 296) and engineering.','Best quality in the universe: failure rates of 1\u20136%, thanks to last period\'s HR spending.','Turned away 50 Family buyers and 58 Image buyers. Their design ranks #1 in Low Cost, Family and Image.','Invested heavily in plants: Image capacity jumps from 54 to 80 usable.'],
+  will:'Sell far more Image (80 cars at $135) and push Family harder since they had 163 orders. Their HR cut may hurt morale and quality later, but not yet.',
+  counter:'Hold our Family buyers with dealer marketing and steady price. In Image, build all 88 of our cars and match their price more closely.'},
+ {t:'Blue',nick:'The Image specialist',threat:['warn','High threat in Image'],
+  did:['#2 in revenue ($21.6k) but lost $1.3k. Image made them $618 at $135, and they turned away 20 Image buyers.','Losing money in Low Cost (unit cost $37 vs price $39) and in Eco (\u2212$1.2k).','Most cash ($22.4k), but debt is now 40% of equity, so their loans cost 4%.'],
+  will:'Stay at $135 in Image with full production. Likely raise Low Cost price or cut back there, and reduce Eco losses.',
+  counter:'Image will stay tight, so we can raise toward $133\u2013135 without losing buyers. Our Low Cost cost advantage ($28.5 vs $37) is safe.'},
+ {t:'Purple',nick:'In trouble',threat:['plain','Low threat, but unpredictable'],
+  did:['Lost $3.7k, the worst in the universe. Revenue fell to $11.6k.','Sold only 14 Family cars at $53 and has 95 unsold, yet still runs the biggest Family plant (164 usable).','Debt jumped to $20.2k, two-thirds of equity, so loans now cost 6%.','Still #1 in Eco design, but turned away 36 Eco buyers.'],
+  will:'Forced cutbacks: fire-sale Family cars, keep Eco as its best business (71 cars of capacity now). May sell a plant after the merger.',
+  counter:'Ignore their Family discounts. Their Eco lead is real, so we beat them on price and cost while we rebuild our Eco design.'},
+ {t:'Yellow',nick:'Drifting',threat:['plain','Medium threat'],
+  did:['Lost $312. Low Cost collapsed: 26 sold, 46 unsold, design last.','Family down to 71 sold at a higher price ($63), with 31 unsold.','Strong in Eco design (#2) and growing Image appeal (99 \u2192 157). Spending more on Image ads.'],
+  will:'Cut Low Cost price to clear 46 cars, and keep pushing Image and Eco. Has the least debt, so it can borrow if it wants to.',
+  counter:'Hold Low Cost at $42; we have no inventory to clear. Watch their Image climb, since they could take some of our Image buyers.'}];
+
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+const $=s=>document.querySelector(s);
+const fmt=n=>(n<0?'\u2212':'')+'$'+Math.abs(Math.round(n)).toLocaleString();
+const k=n=>(n<0?'\u2212':'')+'$'+(Math.abs(n)/1000).toFixed(1)+'k';
+const tn=t=>`<span style="color:${TC[t]};font-weight:700">${t}</span>`;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const col=v=>v>=0?'var(--good)':'var(--bad)';
+
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 tabs \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+const tabs=[...document.querySelectorAll('.navbar .tab')];
+function mark(id){tabs.forEach(t=>t.setAttribute('aria-current',t.getAttribute('href')==='#'+id?'true':'false'))}
+tabs.forEach(t=>t.addEventListener('click',e=>{
+  const el=document.getElementById(t.getAttribute('href').slice(1)); if(!el) return;
+  e.preventDefault(); el.scrollIntoView({behavior:'smooth',block:'start'}); mark(el.id);
+  try{history.replaceState(null,'',t.getAttribute('href'))}catch(err){}
+  t.scrollIntoView({block:'nearest',inline:'center'});
+}));
+if('IntersectionObserver' in window){
+  const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting) mark(en.target.id)})},{rootMargin:'-30% 0px -60% 0px'});
+  document.querySelectorAll('section.panel').forEach(sec=>io.observe(sec));
+}
+mark('overview');
+if(location.hash.length>1){const el=document.getElementById(location.hash.slice(1)); if(el) setTimeout(()=>el.scrollIntoView(),50)}
+
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 overview \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function rankBars(el,key){
+  const rows=TEAMS.map(t=>({t,v:CO[t][key][2]})).sort((a,b)=>b.v-a.v);
+  const max=Math.max(...rows.map(r=>Math.abs(r.v)));
+  el.innerHTML=rows.map(r=>`<div class="rrow ${r.t==='Red'?'us':''}"><span class="name" style="color:${TC[r.t]}">${r.t}</span>
+    <span class="bar"><i style="width:${Math.max(2,Math.abs(r.v)/max*100)}%;background:${r.v<0?'var(--line)':TC[r.t]};${r.v<0?'outline:1px solid '+TC[r.t]:''}"></i></span><span class="val" style="color:${key==='np'?col(r.v):'inherit'}">${k(r.v)}</span></div>`).join('');
+}
+rankBars($('#rank-np'),'np'); rankBars($('#rank-rev'),'rev');
+$('#rank-np').previousElementSibling.textContent='Solid bars are profits, outlined bars are losses.';
+
+(function(){
+  const row=(label,f)=>`<tr><td>${label}</td>${TEAMS.map(t=>`<td>${f(t)}</td>`).join('')}</tr>`;
+  const path=a=>a.map(k).join(' \u2192 ');
+  $('#trend').innerHTML=`<thead><tr><th></th>${TEAMS.map(t=>`<th style="color:${TC[t]}">${t}</th>`).join('')}</tr></thead><tbody>
+   ${row('Revenue P5 \u2192 P6',t=>`${k(CO[t].rev[1])} \u2192 <b>${k(CO[t].rev[2])}</b>`)}
+   ${row('Profit P5 \u2192 P6',t=>`${k(CO[t].np[1])} \u2192 <b style="color:${col(CO[t].np[2])}">${k(CO[t].np[2])}</b>`)}
+   ${row('HR &amp; Quality P5 \u2192 P6',t=>`${fmt(CO[t].hr[1])} \u2192 ${fmt(CO[t].hr[2])}`)}
+   ${row('Plants in P6',t=>{const p=CO[t].plant;return `<span class="pill ${/fast|debt/.test(p)?'warn':p==='Growing'?'good':'plain'}">${p}</span>`})}
+   ${row('Debt',t=>k(CO[t].debt))}
+   ${row('Debt \u00f7 equity',t=>{const l=CO[t].debt/(48000+CO[t].are)*100;return `<span class="pill ${l>=60?'bad':l>=40?'warn':'good'}">${Math.round(l)}%</span>`})}
+   ${row('Cash left',t=>k(CO[t].cash))}</tbody>`;
+})();
+
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 rivals \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+$('#rival-cards').innerHTML=RIVALS.map(r=>{const c=CO[r.t];return `<article class="card rival" style="--c:${TC[r.t]}">
+  <header><h3>${r.t}</h3><span class="pill ${r.threat[0]}">${r.threat[1]}</span></header>
+  <p class="tag">${r.nick}</p>
+  <dl class="kv"><dt>Revenue P6</dt><dd>${k(c.rev[2])}</dd><dt>Profit P6</dt><dd style="color:${col(c.np[2])}">${k(c.np[2])}</dd><dt>Cash</dt><dd>${k(c.cash)}</dd><dt>Debt</dt><dd>${k(c.debt)}</dd><dt>Failure rates</dt><dd>${c.ffr}</dd></dl>
+  <div class="stack"><span class="label">What they did in P6</span><ul class="clean">${r.did.map(x=>`<li><b class="ic">\u2022</b><span>${x}</span></li>`).join('')}</ul></div>
+  <div class="predict"><span class="label">P7 prediction</span><p>${r.will}</p></div>
+  <div class="counter"><span class="label">How Red responds</span><p>${r.counter}</p></div></article>`}).join('');
+
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 markets \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+let segIdx=0;
+function renderSeg(){
+  const s=SEG[segIdx],d=s.d;
+  document.querySelectorAll('#seg-pick button').forEach((b,i)=>b.setAttribute('aria-pressed',i===segIdx));
+  const tot=TEAMS.reduce((a,t)=>a+d[t][I.s6],0), tot5=TEAMS.reduce((a,t)=>a+d[t][I.s5],0);
+  const lost=TEAMS.reduce((a,t)=>a+d[t][I.o6]-d[t][I.s6],0);
+  const leader=[...TEAMS].sort((a,b)=>d[b][I.s6]-d[a][I.s6])[0];
+  const share=Math.round(d.Red[I.s6]/tot*100);
+  $('#seg-summary').innerHTML=`<h3>${s.name}</h3><p class="muted">${s.buyers}</p>
+   <div class="out"><span>Cars sold: <b>${s.p4[0]*5} \u2192 ${tot5} \u2192 ${tot}</b> (P4 \u2192 P6)</span><span>Leader: ${tn(leader)}</span>
+   <span>Our share: <b>${share}%</b></span><span>Buyers turned away: <b>${lost}</b></span></div>`;
+  $('#seg-table').innerHTML=`<thead><tr><th>Team</th><th>Sold P5 \u2192 P6</th><th>Price P6</th><th>Turned away</th><th>Design</th><th>Unsold cars</th><th>P7 can build</th><th>Profit P6</th></tr></thead><tbody>
+  ${TEAMS.map(t=>{const x=d[t],l=x[I.o6]-x[I.s6];return `<tr class="${t==='Red'?'us':''}"><td>${tn(t)}</td><td>${x[I.s5]} \u2192 <b>${x[I.s6]}</b></td><td>$${x[I.p6]}</td>
+   <td>${l>0?`<span class="pill bad">${l}</span>`:'\u2014'}</td><td>#${x[I.rank]}</td><td>${x[I.inv]>15?`<span class="pill warn">${x[I.inv]}</span>`:x[I.inv]}</td>
+   <td>${x[I.use]}</td><td style="color:${col(x[I.ebit])}">${fmt(x[I.ebit])}</td></tr>`}).join('')}</tbody>`;
+}
+$('#seg-pick').innerHTML=SEG.map((s,i)=>`<button type="button" data-i="${i}">${s.name}</button>`).join('');
+document.querySelectorAll('#seg-pick button').forEach(b=>b.addEventListener('click',()=>{segIdx=+b.dataset.i;renderSeg()}));
+renderSeg();
+
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 forecast \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+const FC=SEG.map(s=>{
+  const orders=TEAMS.reduce((a,t)=>a+s.d[t][I.o6],0);
+  const demand=Math.round(orders*(1+s.g));
+  const supply=TEAMS.reduce((a,t)=>a+s.d[t][I.use]+s.d[t][I.inv],0);
+  return {s,orders,demand,supply,ratio:supply/demand};
+});
+const FCNOTE={
+ lc:'More cars than buyers, and Yellow has 46 to clear. Expect prices of $38\u201340 from rivals. Our cost is low enough to hold $42 and sell out.',
+ fam:'Twice as many cars as buyers. Purple has 95 unsold and Red has 42. The price war is Purple\'s alone so far. Sell our stock and build little.',
+ eco:'Supply exceeds demand overall. Purple, the design leader, now has 71 cars of capacity. Our edge here is cost, not design, until we invest in engineering.',
+ img:'The tightest market again: 440 likely buyers for 452 cars. Blue, Green and Purple all charge $135. This is where a higher price costs us almost nothing.'};
+$('#fc-cards').innerHTML=FC.map(f=>{
+  const st=f.ratio<1.1?['good','Tight: raise price']:f.ratio<1.4?['warn','Balanced']:['bad','Crowded: price pressure'];
+  const pctD=Math.min(100,f.demand/Math.max(f.demand,f.supply)*100);
+  return `<div class="card"><header style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><h3>${f.s.name}</h3><span class="pill ${st[0]}">${st[1]}</span></header>
+  <div class="gauge"><div class="track"><div class="fill" style="width:100%;background:var(--line)"></div><div class="fill" style="width:${pctD}%;background:var(--accent)"></div></div>
+  <div class="legend"><span>Buyers \u2248 <b class="num" style="color:var(--fg)">${f.demand}</b></span><span>Cars available \u2248 <b class="num" style="color:var(--fg)">${f.supply}</b></span></div></div>
+  <p>${FCNOTE[f.s.k]}</p><p class="muted" style="font-size:14px">P6 orders ${f.orders}, growth ${f.s.g>0?'+':''}${Math.round(f.s.g*100)}% per period.</p></div>`}).join('');
+$('#fc-moves').innerHTML=`<thead><tr><th>Team</th><th>Low Cost</th><th>Family</th><th>Eco</th><th>Image</th></tr></thead><tbody>
+ <tr><td>${tn('Green')}</td><td>Hold $39, build more</td><td><b>Push harder</b> (163 orders)</td><td>Clear 27 unsold</td><td><b>80 cars at $135</b></td></tr>
+ <tr><td>${tn('Blue')}</td><td>Raise price or cut back</td><td>Hold $60</td><td>Cut losses</td><td><b>Full 90 cars at $135</b></td></tr>
+ <tr><td>${tn('Purple')}</td><td>Hold $39</td><td><b>Fire sale</b> of 95 cars</td><td>Grow to ~71 cars</td><td>Clear 24 unsold</td></tr>
+ <tr><td>${tn('Yellow')}</td><td><b>Price cut</b> to clear 46</td><td>Clear 31 unsold</td><td>Keep design #2</td><td>More ads</td></tr>
+ <tr class="us"><td>${tn('Red')} (us)</td><td>$42, build 63</td><td>$60, build 75</td><td>$66, design up</td><td>$135, build 87</td></tr></tbody>`;
+const SC=[['Purple would cut its Family price','Cut to $53, sold only 14','hit'],
+ ['Purple would be capped at about 46 Eco cars','Sold 45','hit'],
+ ['Green would raise its Image price','$126 \u2192 $135','hit'],
+ ['Blue would keep pushing Image at $135','$135, sold 87, its best segment','hit'],
+ ['Green would cut costs','HR 1,500 \u2192 296, engineering down $530','hit'],
+ ['Image would be the tightest market','90 buyers turned away, the most of any market','hit'],
+ ['Family price war','Only Purple cut; everyone else held $59\u201363','partial'],
+ ['Yellow would spend its cash on Family','Family dropped to 71; they spent on Image ads instead','miss']];
+$('#scorecard').innerHTML=`<thead><tr><th>Our P6 call</th><th style="text-align:left">What happened</th><th></th></tr></thead><tbody>${SC.map(r=>`<tr><td style="white-space:normal">${r[0]}</td><td style="text-align:left;white-space:normal">${r[1]}</td><td><span class="pill ${r[2]==='hit'?'good':r[2]==='partial'?'warn':'bad'}">${r[2]==='hit'?'Right':r[2]==='partial'?'Partly':'Wrong'}</span></td></tr>`).join('')}</tbody>`;
+
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 plan table \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+const PLANWHY={
+ lc:['Hold $42','63 (full)','$490 \u2192 ~$400','P6 balanced perfectly. Cut Design, Comfort and Novelty to the market level and trim three marketing sliders. Est. EBIT $208 \u2192 $420.'],
+ fam:['Hold $60','75, not 132 (+42 in stock)','~$1,050','About 91 buyers and we already have 42 cars. Robustness and Size +1, Novelty and Purchasing \u22121. Est. EBIT about $80.'],
+ eco:['$63 \u2192 $66','58, not 79 (+18 in stock)','~$420','Technology, Consumption and Novelty +1 to start fixing our last-place design. About 72 buyers. Est. EBIT about $625.'],
+ img:['$126 \u2192 $135','87 (full)','$1,932 \u2192 ~$1,820','About 96 buyers for 87 cars even at $135. Cut Size and After Sales to the market level. Est. EBIT $235 \u2192 about $1,300.']};
+$('#plan-table').innerHTML=`<thead><tr><th>Market</th><th>Price</th><th>Production</th><th>Marketing</th><th style="text-align:left">Why</th></tr></thead><tbody>
+${SEG.map(s=>{const w=PLANWHY[s.k];return `<tr><td><b>${s.name}</b></td><td>${w[0]}</td><td>${w[1]}</td><td>${w[2]}</td><td style="text-align:left;white-space:normal;min-width:260px">${w[3]}</td></tr>`}).join('')}</tbody>`;
+
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Decision sliders \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+const LV={VH:4,H:3,M:2,L:1,VL:.5};
+// [name, engBudget, FFR, capex, mfgCost, CO2 effect (\u22122 much worse \u2026 +2 much better)], from the cheat-sheet impact tables
+const ENG_ATTR=[['Design','VH','L','M','M',0],['Performance','H','H','VH','VH',-2],['Comfort','M','L','M','M',0],['Robustness','L','L','L','VL',0],
+ ['Size','L','L','L','L',-1],['Technology','VH','VH','VL','L',-1],['Consumption','H','M','VH','H',2],['Number of Models','H','M','M','M',0],['Novelty','H','H','H','H',1]];
+const MKT_ATTR=['Car Dealership Proximity','Purchasing Experience','After Sales Experience','Brand Power (per Model)'];
+const MKT_COST=[.14,.06,.06,.08];
+const SL={
+ lc:{name:'Low Cost',ready:true,
+  eng:{now:[3,1,5,9,7,2,6,3,3],mkt:[2,3.8,4,8.6,6.4,2.4,6,3.8,1.6],rec:[2,1,4,9,7,2,6,3,2],
+       app:[.5,.4,1,2,1.6,.3,1.4,.8,.3],
+       why:['Buyers want "design to cost". Design is the most expensive engineering item, and we sit above the market (3 vs 2).',
+            'Keep at 1. Performance is the costliest to build, adds CO2, and Low Cost buyers are "not looking for power".',
+            'Trim to the market level (4). It costs medium budget, and buyers care more about sturdiness and space.',
+            'Keep high. Robustness is cheap (very low build cost), and Low Cost buyers want a sturdy, easy-to-repair car.',
+            'Keep at 7. Space matters to these buyers and size is cheap to add.',
+            'Keep low. Technology has a very high engineering cost and raises failure rate. "No superfluous technology."',
+            'Hold at 6, the market level. Gas prices are rising, so buyers care more, and it is the biggest CO2 lever.',
+            'Hold at 3. More models raise both engineering and marketing budgets a lot.',
+            'Cut to 2. More carry-over parts lowers cost and failure rate. The cheat sheet says to "make the right level of carry over".']},
+  mktg:{now:[4,3,3,2],mkt:[3.6,2.2,1.6,1.4],rec:[4,2,2,1],app:[8,4,4,3],
+       why:['Keep at 4. Low Cost buyers need a dealer nearby to get the car fast, and availability matters most to them.',
+            'Cut to 2. We are above the market (2.2) in a segment where buyers barely respond to marketing.',
+            'Cut to 2. We are nearly double the market (1.6). These cars are easy and cheap to repair.',
+            'Cut to 1. Brand barely matters for Low Cost, and we are above the market (1.4).']},
+  base:{engApp:88,mktApp:170,price:42,market:305,share:19,growth:.10,elast:2.5,engSens:.3,mktSens:.2,
+        usable:63,prod:63,recProd:63,inv:0,invValue:7,invRate:.5,fixed:1084,variable:9.4,ffr:7.9,dep:69,mkt:490,eng:32,quality:91,
+        nfa:1725,capex:25,p6:{sold:57,rev:2394,ebit:5},
+        note:'With no slider changes, this matches MEGA\'s own P7 forecast (revenue $2,646, EBIT $208).'}},
+ fam:{name:'Family',ready:true,
+  eng:{now:[5,4,6,6,7,5,4,4,4],mkt:[5.2,4.6,6.6,5.8,7.4,5,5.4,3.4,3.4],rec:[5,4,6,7,8,5,4,4,3],
+       app:[.8,.5,1.6,1.2,1.6,.8,1.2,.8,.6],
+       why:['Hold at 5, right at the market (5.2). Design is the most expensive engineering item.',
+            'Hold at 4. Families don\'t buy for power, and performance is the costliest to build and adds CO2.',
+            'Hold at 6. Families value comfort, but in a shrinking market the extra build cost outweighs the few extra buyers it wins.',
+            'Raise to 7. Robustness is nearly free to build (very low cost) and signals a safe, durable family car.',
+            'Raise to 8. Space is the point of a family car, size is cheap, and we are below the market (7 vs 7.4).',
+            'Hold at 5, the market level. Safety tech matters to families, but technology raises failure rate and engineering cost.',
+            'Hold at 4 for now. Raising it is the best CO2 move, but it is expensive to build (high cost, very high capex). Revisit if CO2 ranking starts to hurt.',
+            'Hold at 4. Families like choice, and cutting models now could "destabilise the market".',
+            'Cut to 3, the market level (3.4). More carry-over parts lowers cost and failure rate. This alone saves about $100 of EBIT.']},
+  mktg:{now:[7,3,4,2],mkt:[6.6,2.4,3,3.4],rec:[7,2,4,2],app:[10,3,5,2],
+       why:['Hold at 7, above the market (6.6). Dealer proximity is what Family buyers care about most, but each extra step costs about $150 for only 2\u20133 more buyers.',
+            'Cut to 2, near the market (2.4). It saves about $65 and costs only about 1 buyer.',
+            'Hold at 4. Families value servicing near home, and we are above the market (3).',
+            'Hold at 2. Family buyers "are not so sensitive to advertisement". Leave the brand spending to others.']},
+  base:{engApp:72,mktApp:101,price:60,market:433,share:22,growth:-.05,elast:1.3,engSens:.5,mktSens:.4,
+        usable:132,prod:132,recProd:75,inv:42,invValue:1379,invRate:1,fixed:1404,variable:20.6,ffr:4.9,dep:390,mkt:1118,eng:161,quality:360,
+        nfa:6500,capex:43,p6:{sold:95,rev:5700,ebit:511},
+        note:'MEGA\'s Family screen shows EBIT $2,734 only because its market-size box is 0, so it assumes all 174 cars sell. Enter the market size and share from here instead. Building all 132 makes P7 EBIT look about $450 better, but only because $1,404 of fixed costs gets parked in about 80 unsold cars. That costs over $1,000 more cash now and pushes the cost into P8, in a market that shrinks every period. We recommend 75, which leaves about 25 spare.'}},
+ eco:{name:'Eco-Friendly',ready:true,
+  eng:{now:[3,2,4,4,3,5,7,2,3],mkt:[3.8,4.2,4.2,4.6,2.8,7.2,7.6,3.2,4.8],rec:[3,2,4,4,3,6,8,2,4],
+       app:[.8,.3,.6,.5,.4,2,3,1,1.6],
+       why:['Hold at 3. Eco buyers care about efficiency more than looks, and design is the most expensive engineering item.',
+            'Keep at 2. Performance is the worst slider for CO2 and the costliest to build. Eco buyers no longer "look for horsepower".',
+            'Hold at 4, near the market (4.2).',
+            'Hold at 4. Not what Eco buyers shop for.',
+            'Hold at 3. Smaller cars use less fuel and emit less CO2.',
+            'Raise to 6. We are well below the market (5 vs 7.2) and Eco buyers are "impressed by engineering". Go one step at a time: technology raises failure rate, and ours is already the highest (10.9%).',
+            'Raise to 8. Fuel consumption is the reason people buy Eco cars, and gas prices are rising. It is also our best CO2 lever.',
+            'Hold at 2. More models cost a lot of engineering and marketing.',
+            'Raise to 4, toward the market (4.8). Eco is a new, growing market where novelty sells, and novelty slightly improves CO2.']},
+  mktg:{now:[2,3,2,4],mkt:[2.4,2.8,2.6,3.4],rec:[2,3,3,4],app:[3,4,5,6],
+       why:['Hold at 2. Proximity is the most expensive marketing item.',
+            'Hold at 3, at the market level.',
+            'Raise to 3. We are below the market (2 vs 2.6), and our marketing appeal is only 61%. A cheap step up.',
+            'Hold at 4, above the market. Brand matters more in Eco than in Low Cost or Family.']},
+  base:{engApp:56,mktApp:61,price:63,market:272,share:21,growth:.15,elast:.7,engSens:.8,mktSens:.4,
+        usable:79,prod:79,recProd:58,recPrice:66,inv:18,invValue:733,invRate:1,fixed:1164,variable:15.5,ffr:10.9,dep:336,mkt:394,eng:94,quality:211,
+        nfa:4200,capex:46,p6:{sold:56,rev:3528,ebit:183},
+        note:'MEGA\'s Eco screen shows EBIT $1,728 only because its market-size box is 0, so it assumes all 97 cars sell. About 66 buyers are realistic, and we already have 18 cars in stock.'}},
+ img:{name:'Image',ready:true,
+  eng:{now:[8,7,7,5,5,8,5,7,7],mkt:[8.2,7.4,6,5.2,3.4,8.2,4.4,6,8.2],rec:[8,7,7,5,4,8,5,7,7],
+       app:[3,2,1.5,.8,.5,3,.8,2,3],
+       why:['Hold at 8, at the market level. Image buyers demand design.',
+            'Hold at 7. High performance is part of the Image promise.',
+            'Hold at 7. Premium comfort supports the $135 price.',
+            'Hold at 5, at the market level.',
+            'Cut to 4. We are far above the market (5 vs 3.4). Image buyers don\'t pay for size, and smaller means lower cost and less CO2.',
+            'Hold at 8, at the market level. "Technological superiority" is a key reason people buy Image.',
+            'Hold at 5.',
+            'Hold at 7. A wide range supports the brand.',
+            'Hold at 7 for P7. We can\'t sell more Image cars than our plant builds (87), so extra appeal won\'t add sales now. Raise novelty toward 8 once Image capacity grows.']},
+  mktg:{now:[2,7,7,9],mkt:[2.8,7,5.8,8.6],rec:[2,7,6,9],app:[4,6,6,10],
+       why:['Hold at 2. Image buyers don\'t need a dealer on every corner.',
+            'Hold at 7, at the market level. The premium buying experience matters.',
+            'Cut to 6. We are above the market (5.8), and we already have more buyers than cars.',
+            'Hold at 9. Brand is the most important marketing lever for Image buyers.']},
+  base:{engApp:191,mktApp:133,price:126,market:421,share:23,growth:.05,elast:.35,engSens:1,mktSens:.6,
+        usable:87,prod:87,recProd:87,recPrice:135,inv:0,invValue:61,invRate:2,fixed:1624,variable:52.4,ffr:6.9,dep:975,mkt:1932,eng:942,quality:378,
+        nfa:12190,capex:127,p6:{sold:85,rev:10710,ebit:-65},
+        note:'With no slider changes, this matches MEGA\'s P7 forecast (revenue $10,962, EBIT $235). Expect about 102 buyers for 87 cars, so we can raise the price to $135, where Blue, Green and Purple already are, and still sell out.'}}};
+let slKey='lc';
+const slState={};
+function slInit(key,which){
+  const c=SL[key];
+  slState[key]={eng:[...c.eng[which]],mktg:[...c.mktg[which]],price:which==='rec'&&c.base.recPrice?c.base.recPrice:c.base.price,prod:which==='rec'?c.base.recProd:c.base.prod,
+    market:Math.round(c.base.market*(1+c.base.growth)),quality:c.base.quality};
+}
+function slModel(c,s){
+  const b=c.base;
+  let engApp=b.engApp, mktApp=b.mktApp, engCost=b.eng, mktCost=b.mkt, variable=b.variable, ffr=b.ffr, co2=0;
+  s.eng.forEach((v,i)=>{
+    const d=v-c.eng.now[i], a=ENG_ATTR[i];
+    engApp+=d*c.eng.app[i];
+    engCost*=1+d*LV[a[1]]*.06;
+    ffr+=d*LV[a[2]]*.12;
+    variable*=1+d*LV[a[4]]*.025;
+    co2+=d*a[5];
+    if(i===7) mktCost*=1+d*.08;
+  });
+  s.mktg.forEach((v,i)=>{const d=v-c.mktg.now[i];mktApp+=d*c.mktg.app[i];mktCost*=1+d*MKT_COST[i]});
+  engCost=Math.max(0,engCost); mktCost=Math.max(0,mktCost); ffr=Math.max(.5,ffr);
+  const prod=Math.max(0,Math.min(s.prod,b.usable));
+  const share=b.share*Math.pow(s.price/b.price,-b.elast)*Math.pow(Math.max(engApp,1)/b.engApp,b.engSens)*Math.pow(Math.max(mktApp,1)/b.mktApp,b.mktSens);
+  const orders=Math.round(s.market*share/100);
+  const avail=prod+b.inv, sold=Math.min(orders,avail);
+  const unit=avail?(b.fixed+variable*prod+b.invValue)/avail:0;
+  const rev=sold*s.price, cogs=sold*unit, cnq=rev*ffr/100/3, invCharge=(avail-sold)*b.invRate;
+  const gp=rev-cogs-b.dep-cnq-invCharge, ebit=gp-mktCost-engCost-s.quality;
+  return {budget:b.fixed+variable*prod,engApp,mktApp,unit,ffr,share,orders,avail,sold,lost:Math.max(0,orders-avail),left:avail-sold,rev,gp,mktCost,engCost,ebit,margin:rev?ebit/rev*100:0,co2,over:s.prod>b.usable};
+}
+function slRow(group,i,label,c,s){
+  const now=c[group].now[i], mk=c[group].mkt[i], rec=c[group].rec[i], v=s[group][i];
+  return `<div class="sl-row ${v!==now?'changed':''}">
+   <div class="sl-head"><b>${label}</b><span class="val" id="v-${group}-${i}">${v}</span></div>
+   <div class="sl-track"><span class="mk mkt" style="left:${mk*10}%" title="Market average"></span><span class="mk rec" style="left:${rec*10}%" title="Recommended"></span>
+    <input type="range" min="0" max="10" step="1" value="${v}" id="r-${group}-${i}" data-g="${group}" data-i="${i}" aria-label="${label}"></div>
+   <div class="sl-meta"><span>Now ${now}</span><span>Market ${mk}</span><span class="m-rec">Recommended ${rec}</span></div>
+   <p class="sl-why">${c[group].why[i]}</p></div>`;
+}
+function renderSliders(){
+  document.querySelectorAll('#sl-pick button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===slKey));
+  const c=SL[slKey];
+  if(!c.ready){
+    $('#sl-body').innerHTML=`<div class="card waiting-card"><h3>${c.name}: waiting on screenshots</h3>
+     <p>To set up ${c.name}, we need the same four MEGA screens we have for Low Cost: the Engineering chart, the Marketing chart, the sliders with the P7 Forecast panel, and the Budget and Unit Costs panel.</p>
+     <p class="muted">Until then, use the ${c.name} row in the Budget planner tab.</p></div>`;
+    return;
+  }
+  if(!slState[slKey]) slInit(slKey,'rec');
+  const s=slState[slKey];
+  $('#sl-body').innerHTML=`<div class="sl-grid">
+   <div class="stack">
+    <div class="card"><h3>Engineering</h3><p class="muted" style="font-size:14px">Grey tick = market average \u00b7 green tick = our recommendation</p>
+     <div>${ENG_ATTR.map((a,i)=>slRow('eng',i,a[0],c,s)).join('')}</div></div>
+    <div class="card"><h3>Marketing</h3><div>${MKT_ATTR.map((a,i)=>slRow('mktg',i,a,c,s)).join('')}</div></div>
+   </div>
+   <div class="res">
+    <div class="card"><h3>Price &amp; production</h3>
+     <div class="prow" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+      <div class="field"><label for="sl-price">Price $</label><input id="sl-price" type="number" value="${s.price}"></div>
+      <div class="field"><label for="sl-prod">Production (max ${c.base.usable})</label><input id="sl-prod" type="number" value="${s.prod}"></div>
+      <div class="field"><label for="sl-market">P7 market size</label><input id="sl-market" type="number" value="${s.market}"></div>
+      <div class="field"><label for="sl-q">Quality $ (allocated)</label><input id="sl-q" type="number" value="${s.quality}"></div>
+     </div>
+     <p class="muted" style="font-size:13px">Market size defaults to P6's ${c.base.market} plus ${Math.round(c.base.growth*100)}% growth. Enter this number and the share below into MEGA's forecast boxes.</p>
+     <div class="btnrow"><button type="button" class="btn" id="sl-rec">Use recommended</button><button type="button" class="btn ghost" id="sl-now">Reset to current</button></div>
+    </div>
+    <div class="card" id="sl-out"></div>
+   </div></div>`;
+  document.querySelectorAll('#sl-body input[type=range]').forEach(r=>r.addEventListener('input',()=>{
+    s[r.dataset.g][+r.dataset.i]=+r.value; $('#v-'+r.dataset.g+'-'+r.dataset.i).textContent=r.value;
+    r.closest('.sl-row').classList.toggle('changed',+r.value!==c[r.dataset.g].now[+r.dataset.i]); slCalc();
+  }));
+  [['sl-price','price'],['sl-prod','prod'],['sl-market','market'],['sl-q','quality']].forEach(([id,f])=>$('#'+id).addEventListener('input',e=>{s[f]=+e.target.value||0;slCalc()}));
+  $('#sl-rec').addEventListener('click',()=>{slInit(slKey,'rec');renderSliders()});
+  $('#sl-now').addEventListener('click',()=>{slInit(slKey,'now');renderSliders()});
+  slCalc();
+}
+function slCalc(){
+  if(typeof corpRender==='function'&&document.getElementById('corp-bu').innerHTML) setTimeout(corpRender,0);
+  const c=SL[slKey], s=slState[slKey], x=slModel(c,s);
+  const meg=slModel(c,{eng:[...c.eng.now],mktg:[...c.mktg.now],price:c.base.price,prod:c.base.prod,market:s.market,quality:c.base.quality});
+  const up=(a,b,money,pct)=>{const v=a-b;if(Math.abs(v)<(pct?.05:.5))return '';return ` <span class="delta" style="color:${v>0?'var(--good)':'var(--bad)'}">${v>0?'+':'\u2212'}${money?'$':''}${Math.abs(v).toFixed(pct?1:0)}${pct?'%':''}</span>`};
+  const dn=(a,b,money)=>{const v=a-b;if(Math.abs(v)<.05)return '';return ` <span class="delta" style="color:${v<0?'var(--good)':'var(--bad)'}">${v>0?'+':'\u2212'}${money?'$':''}${Math.abs(v).toFixed(money&&Math.abs(v)>=10?0:1)}</span>`};
+  const flags=[];
+  if(x.over) flags.push(`<span class="pill bad">Plant can only build ${c.base.usable}</span>`);
+  if(x.lost>1) flags.push(`<span class="pill warn">~${x.lost} buyers turned away</span>`);
+  if(x.left>3) flags.push(`<span class="pill warn">~${x.left} cars left unsold</span>`);
+  if(x.co2>0) flags.push('<span class="pill good">Lower CO2</span>'); else if(x.co2<0) flags.push('<span class="pill bad">Higher CO2</span>');
+  if(!x.lost&&x.left<=3&&!x.over) flags.push('<span class="pill good">Balanced: we sell every car we build</span>');
+  $('#sl-out').innerHTML=`<header style="display:grid;gap:2px"><h3>Expected P7 result</h3>
+    <span class="muted" style="font-size:13px">Colored numbers = change vs. our current settings and MEGA's default production (${c.base.prod})</span></header>
+   <div class="grid2" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+    <div class="tile"><span class="label">EBIT</span><span class="v" style="color:${col(x.ebit)}">${fmt(x.ebit)}</span><span class="note">P6 was ${fmt(c.base.p6.ebit)}${up(x.ebit,meg.ebit,true)}</span></div>
+    <div class="tile"><span class="label">Cars sold</span><span class="v">${x.sold}</span><span class="note">P6 was ${c.base.p6.sold}${up(x.sold,meg.sold)}</span></div>
+   </div>
+   <div class="out">${flags.join(' ')}</div>
+   <table class="rtable"><tbody>
+    <tr><td>Engineering appeal (% of P4)</td><td>${x.engApp.toFixed(0)}%${up(x.engApp,meg.engApp,false,true)}</td></tr>
+    <tr><td>Marketing appeal (% of P4)</td><td>${x.mktApp.toFixed(0)}%${up(x.mktApp,meg.mktApp,false,true)}</td></tr>
+    <tr><td>Market share \u2192 enter in MEGA</td><td>${x.share.toFixed(1)}%${up(x.share,meg.share,false,true)}</td></tr>
+    <tr><td>Orders expected</td><td>${x.orders}</td></tr>
+    <tr><td>Cars available (built + in stock)</td><td>${x.avail}</td></tr>
+    <tr><td>Cars left unsold</td><td>${x.left}${x.left>3?' <span class="delta" style="color:var(--warn)">carried to P8</span>':''}</td></tr>
+    <tr><td>Production budget (cash)</td><td>${fmt(x.budget)}${dn(x.budget,meg.budget,true)}</td></tr>
+    <tr><td>Unit cost</td><td>$${x.unit.toFixed(1)}${dn(x.unit,meg.unit,true)}</td></tr>
+    <tr><td>Field failure rate</td><td>${x.ffr.toFixed(1)}%${dn(x.ffr,meg.ffr)}</td></tr>
+    <tr class="hl"><td>Sales revenue</td><td>${fmt(x.rev)}${up(x.rev,meg.rev,true)}</td></tr>
+    <tr><td>Gross profit</td><td>${fmt(x.gp)}${up(x.gp,meg.gp,true)}</td></tr>
+    <tr><td>Marketing expense</td><td>${fmt(x.mktCost)}${dn(x.mktCost,meg.mktCost,true)}</td></tr>
+    <tr><td>Engineering expense</td><td>${fmt(x.engCost)}${dn(x.engCost,meg.engCost,true)}</td></tr>
+    <tr><td>Quality</td><td>${fmt(s.quality)}</td></tr>
+    <tr class="hl"><td>EBIT / sales</td><td>${x.margin.toFixed(1)}%</td></tr>
+   </tbody></table>
+   <p class="muted" style="font-size:13px">${c.base.note} Slider effects on cost and appeal are our estimates from the cheat-sheet impact tables. After you pick settings here, move the same sliders in MEGA and trust MEGA's cost and budget numbers. Our part is the demand side: market size and share.</p>`;
+}
+$('#sl-pick').innerHTML=Object.entries(SL).map(([k,c])=>`<button type="button" data-k="${k}">${c.name}${c.ready?'':' \u00b7 needs screens'}</button>`).join('');
+document.querySelectorAll('#sl-pick button').forEach(b=>b.addEventListener('click',()=>{slKey=b.dataset.k;renderSliders()}));
+renderSliders();
+
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Corporate budget (mirrors MEGA's Corporate sheet) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+const CORP={cash:21295,debt:12000,equity:48000-11912,maxLoan:2000};
+const FAC_REC={lc:319,fam:0,eco:336,img:1610};
+const corp={fac:{...FAC_REC},hr:1040,repay:0,div:0,loan:2000};
+Object.keys(SL).forEach(k=>{if(!slState[k]) slInit(k,'rec')});
+function corpRender(){
+  const keys=Object.keys(SL);
+  const R=keys.map(k=>{const c=SL[k],s=slState[k],x=slModel(c,s),b=c.base,inv=+corp.fac[k]||0;
+    const capNext=Math.max(0,(b.nfa-b.dep+inv)/b.capex);
+    return {k,c,s,x,inv,capNext,cash:x.budget+inv+x.mktCost+x.engCost}});
+  const used=R.reduce((a,r)=>a+r.cash,0);
+  const avail=CORP.cash-used-corp.hr-corp.repay-corp.div;
+  const quality=R.reduce((a,r)=>a+r.s.quality,0);
+  const ebit=R.reduce((a,r)=>a+r.x.ebit,0)-(corp.hr-quality);
+  const rev=R.reduce((a,r)=>a+r.x.rev,0);
+  const lev=(CORP.debt-corp.repay+corp.loan)/CORP.equity*100, rate=lev<40?2:lev<60?4:lev<80?6:8;
+  const ok=avail>=0;
+  $('#corp-verdict').innerHTML=`<div class="grid4">
+    <div class="tile"><span class="label">Cash available</span><span class="v" style="color:${ok?'var(--good)':'var(--bad)'}">${fmt(avail)}</span><span class="note">${ok?'Must stay at $0 or above. \u2713':'Over budget. MEGA will cut facility investment first, then HR, then production.'}</span></div>
+    <div class="tile"><span class="label">Expected revenue</span><span class="v">${k(rev)}</span><span class="note">P6 was ${k(CO.Red.rev[2])}</span></div>
+    <div class="tile"><span class="label">Expected EBIT</span><span class="v" style="color:${col(ebit)}">${k(ebit)}</span><span class="note">P6 was $0.6k. Uses realistic demand, not MEGA's "sell everything" default.</span></div>
+    <div class="tile"><span class="label">Debt \u00f7 equity</span><span class="v" style="color:${rate>2?'var(--warn)':'var(--good)'}">${Math.round(lev)}%</span><span class="note">Interest rate ${rate}%.</span></div></div>`;
+  const cell=(f)=>R.map(r=>`<td>${f(r)}</td>`).join('');
+  $('#corp-bu').innerHTML=`<thead><tr><th>From the Sliders tab</th>${R.map(r=>`<th>${r.c.name}</th>`).join('')}<th>Total</th></tr></thead><tbody>
+   <tr><td>Price</td>${cell(r=>'$'+r.s.price)}<td></td></tr>
+   <tr><td>Orders expected (enter market size &amp; share in MEGA)</td>${cell(r=>`${r.x.orders} <span class="muted" style="font-size:13px">(${r.s.market} \u00d7 ${r.x.share.toFixed(0)}%)</span>`)}<td></td></tr>
+   <tr><td>Production</td>${cell(r=>Math.min(r.s.prod,r.c.base.usable))}<td></td></tr>
+   <tr><td>Cars sold</td>${cell(r=>r.x.sold)}<td>${R.reduce((a,r)=>a+r.x.sold,0)}</td></tr>
+   <tr><td>Left unsold</td>${cell(r=>r.x.left>3?`<span class="pill warn">${r.x.left}</span>`:r.x.left)}<td></td></tr>
+   <tr><td>Turned away</td>${cell(r=>r.x.lost>1?`<span class="pill bad">${r.x.lost}</span>`:'\u2014')}<td></td></tr>
+   <tr><td><b>Sales revenue</b></td>${cell(r=>'<b>'+fmt(r.x.rev)+'</b>')}<td><b>${fmt(rev)}</b></td></tr>
+   <tr><td><b>EBIT</b></td>${cell(r=>`<b style="color:${col(r.x.ebit)}">${fmt(r.x.ebit)}</b>`)}<td><b style="color:${col(ebit)}">${fmt(ebit)}</b></td></tr>
+   <tr><td>Production budget</td>${cell(r=>fmt(r.x.budget))}<td>${fmt(R.reduce((a,r)=>a+r.x.budget,0))}</td></tr>
+   <tr><td>Marketing</td>${cell(r=>fmt(r.x.mktCost))}<td>${fmt(R.reduce((a,r)=>a+r.x.mktCost,0))}</td></tr>
+   <tr><td>Engineering</td>${cell(r=>fmt(r.x.engCost))}<td>${fmt(R.reduce((a,r)=>a+r.x.engCost,0))}</td></tr>
+   <tr><td>Facility investment</td>${cell(r=>fmt(r.inv))}<td>${fmt(R.reduce((a,r)=>a+r.inv,0))}</td></tr>
+   <tr><td><b>Total cash used</b></td>${cell(r=>'<b>'+fmt(r.cash)+'</b>')}<td><b>${fmt(used)}</b></td></tr></tbody>`;
+  $('#corp-fac').innerHTML=`<thead><tr><th></th><th>Now</th><th>Capex/car</th><th>Invest $</th><th>Next period</th></tr></thead><tbody>
+   ${R.map(r=>{const d=Math.round(r.capNext)-Math.round(r.c.base.nfa/r.c.base.capex);return `<tr><td>${r.c.name}</td><td>${Math.round(r.c.base.nfa/r.c.base.capex)}</td><td>$${r.c.base.capex}</td>
+    <td><input type="number" id="fac-${r.k}" value="${corp.fac[r.k]}" style="width:90px;font:600 15px var(--body);padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)" aria-label="${r.c.name} facility investment"></td>
+    <td><b>${Math.round(r.capNext)}</b> <span class="delta" style="color:${d>0?'var(--good)':d<0?'var(--warn)':'var(--muted)'}">${d>0?'+':''}${d||'same'}</span></td></tr>`}).join('')}</tbody>`;
+  $('#corp-cash').innerHTML=`<table class="rtable"><tbody>
+    <tr><td>Cash at start</td><td>${fmt(CORP.cash)}</td></tr>
+    <tr><td>Cash used by business units</td><td>\u2212${fmt(used)}</td></tr>
+    <tr><td><label for="c-hr">HR &amp; Quality</label></td><td><input type="number" id="c-hr" value="${corp.hr}" style="width:100px;text-align:right;font:600 15px var(--body);padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)"></td></tr>
+    <tr><td><label for="c-repay">Loan repayment</label></td><td><input type="number" id="c-repay" value="${corp.repay}" style="width:100px;text-align:right;font:600 15px var(--body);padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)"></td></tr>
+    <tr><td>Dividend <span class="muted">(max $0: retained earnings are negative)</span></td><td>$0</td></tr>
+    <tr class="hl"><td>Cash available</td><td style="color:${ok?'var(--good)':'var(--bad)'}">${fmt(avail)}</td></tr>
+    <tr><td><label for="c-loan">New long-term loan (max $2,000, arrives P8)</label></td><td><input type="number" id="c-loan" value="${corp.loan}" style="width:100px;text-align:right;font:600 15px var(--body);padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)"></td></tr>
+   </tbody></table>
+   ${corp.hr<1040?'<p class="pill warn" style="margin-top:8px;white-space:normal">Cutting HR below last period\'s $1,040 hurts morale.</p>':''}
+   ${corp.loan>CORP.maxLoan?'<p class="pill bad" style="margin-top:8px">Loan limit is $2,000 this period.</p>':''}`;
+  Object.keys(SL).forEach(k=>document.getElementById('fac-'+k).addEventListener('change',e=>{corp.fac[k]=+e.target.value||0;corpRender()}));
+  [['c-hr','hr'],['c-repay','repay'],['c-loan','loan']].forEach(([id,f])=>document.getElementById(id).addEventListener('change',e=>{corp[f]=+e.target.value||0;corpRender()}));
+}
+$('#corp-reset').addEventListener('click',()=>{Object.assign(corp,{fac:{...FAC_REC},hr:1040,repay:0,div:0,loan:2000});corpRender()});
+corpRender();
+
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Ask the Scout (Claude) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+const CHIPS=['What is Green most likely to do next period, and how do we stay #1?','Give me a 5-bullet briefing for our team meeting.','Should we invest in Image or Low Cost capacity first?',
+ 'Purple sold just 14 Family cars, has 95 in inventory, and is building the biggest Family plant in the universe. What would have to be true for that plant to pay off?',
+ 'Green and Blue have the top Image engineering and the same $135 price, yet Blue sold 87 and Green 53. What else is different?',
+ 'Red raised HR & Quality from 150 to 1,040, and Green cut it from 1,500 to 296. Both swung to a profit. Can both be right?'];
+$('#scout-chips').innerHTML=CHIPS.map(c=>`<button type="button" class="chip">${esc(c)}</button>`).join('');
+const RULES=`MEGA "Customer Value Challenge" car simulation. 5 teams (Red, Blue, Yellow, Green, Purple) in Universe 2. We are RED. Now deciding Period 7.
+Segments: Low Cost (price sensitivity HIGH, marketing LOW, engineering LOW, ability to deliver HIGH; growth +10%/period), Family (all MEDIUM; dealer proximity matters; growth -5%), Eco-Friendly (price LOW, marketing MEDIUM, engineering HIGH, deliver LOW; growth +15%), Image (price V.LOW, marketing HIGH, engineering V.HIGH, deliver LOW; growth +5%).
+Engineering sliders (0-10): Design, Performance, Comfort, Robustness, Size, Technology, Consumption, Number of Models, Novelty. Marketing sliders: Car Dealership Proximity, Purchasing Experience, After Sales Experience, Brand Power.
+Unfilled orders are lost forever and hurt future demand. Marketing and engineering carry over. New plant capacity arrives next period; capacity only shrinks via depreciation. HR & Quality takes one period to act; raises morale, usable capacity, effectiveness, lowers field failure rate (failures cost 1/3 of revenue). Cutting budgets hurts morale.
+Loans: max 5x previous net profit or $2000, cash arrives next period, interest by debt/equity: <40% 2%, 40-60% 4%, 60-80% 6%, 80-100% 8%. Equity = $48,000 + retained earnings. Spending cannot exceed starting cash.
+Winning criteria: sales revenue, ROCE, retained earnings, employee morale, share value, low CO2.
+Merger (Region 2) not yet opened: R2 starts with Low Cost & Family; R2 growth LC +20%, Family +5%, Eco +5%, Image +15%; R2 production cost 75% of R1; product transfers at cost + markup (15/15/20/25%) + 5% transport.`;
+function dataBrief(){
+  const L=['Company (P4, P5, P6):'];
+  TEAMS.forEach(t=>{const c=CO[t];L.push(`${t}: revenue ${c.rev}, net profit ${c.np}, HR ${c.hr}, marketing ${c.mkt}, engineering ${c.eng}; now cash ${c.cash}, debt ${c.debt}, retained earnings ${c.are}, P6 plant spending ${c.plant}, failure rates ${c.ffr}`)});
+  L.push('Segments per team: soldP5, soldP6, ordersP5, ordersP6, priceP5, priceP6, marketing$P6, design appeal P6, design rank P6, unsold inventory, usable capacity P7, segment EBIT P6, unit cost P6, engineering$P6. P4 was identical for all teams.');
+  SEG.forEach(s=>{L.push(`${s.name} (P4 per team: ${s.p4[0]} cars at $${s.p4[1]}):`);TEAMS.forEach(t=>L.push(`  ${t}: ${s.d[t].join(', ')}`))});
+  Object.entries(SL).forEach(([k,c])=>L.push(`Red ${c.name} sliders now: engineering ${c.eng.now.join('/')} (market ${c.eng.mkt.join('/')}, our rec ${c.eng.rec.join('/')}); marketing ${c.mktg.now.join('/')} (market ${c.mktg.mkt.join('/')}, rec ${c.mktg.rec.join('/')}); price ${c.base.price}, usable capacity ${c.base.usable}, inventory ${c.base.inv}, fixed cost ${c.base.fixed}, variable cost/car ${c.base.variable}, capex/car ${c.base.capex}.`));
+  L.push('Corporate P7: cash at start 21295, MEGA default plan was $1059 over budget. Our plan: LC $42 build 63; Family $60 build 75; Eco $66 build 58; Image $135 build 87; facility investment LC 319 (+10 cap), Family 0 (shrinks 151\u2192142), Eco 336, Image 1610 (+5 cap); HR 1040; $2000 loan. Leaves ~$330 cash, est. EBIT ~$2.4k.');
+  return L.join('\n');
+}
+let scoutCtl=null;
+(async()=>{
+  const sample=window.claude?await window.claude.use('sample'):null;
+  if(!sample){$('#scout-out').textContent='Ask the Scout works when this page is opened on claude.ai. Everything else on the page works anywhere.';$('#scout-form').hidden=true;$('#scout-chips').hidden=true;return}
+  const out=$('#scout-out'),go=$('#scout-go'),stop=$('#scout-stop');
+  async function ask(q){
+    q=q.trim(); if(!q) return;
+    scoutCtl=new AbortController(); go.disabled=true; stop.hidden=false; out.textContent='Thinking\u2026';
+    const intel=$('#scout-intel').value.trim();
+    const prompt=`You are the competitive-intelligence scout for the RED team in a MEGA business simulation. Answer the teammate's question using only the data and rules below plus any extra intel. Be direct and plain-spoken for students: lead with the answer, then at most 5 short bullets, use only the few numbers that matter, and end with one concrete action for Red. Say when something is a guess.
+
+GAME RULES:
+${RULES}
+
+UNIVERSE 2 DATA:
+${dataBrief()}
+${intel?`\nEXTRA INTEL FROM THE TEAM (may be unverified):\n${intel}\n`:''}
+QUESTION: ${q}`;
+    try{
+      const {truncated}=await sample(prompt,{signal:scoutCtl.signal,onText:({text})=>{out.textContent=text}});
+      if(truncated) out.textContent+='\n\n(Answer was cut short. Try a narrower question.)';
+    }catch(e){
+      out.textContent=e.text||'';
+      const msg={not_granted:'Ask the Scout needs your permission to use Claude. Reload the page to be asked again.',sampling_disabled:'Claude isn\'t available on this account.',rate_limited:'Too many questions at once. Wait a minute and try again.',refused:'The Scout couldn\'t answer that. Try rewording it.',session_expired:'Sign in to claude.ai again, then retry.'}[e.code];
+      if(e.code!=='cancelled') out.textContent+=(out.textContent?'\n\n':'')+(msg||'Something went wrong reaching Claude. Try again.');
+      if(e.code==='not_granted'||e.code==='sampling_disabled'){$('#scout-form').hidden=true;$('#scout-chips').hidden=true}
+    }finally{go.disabled=false;stop.hidden=true}
+  }
+  $('#scout-form').addEventListener('submit',e=>{e.preventDefault();ask($('#scout-q').value)});
+  document.querySelectorAll('#scout-chips .chip').forEach(c=>c.addEventListener('click',()=>{$('#scout-q').value=c.textContent;ask(c.textContent)}));
+  stop.addEventListener('click',()=>scoutCtl?.abort());
+})();
+</script>
